@@ -8,17 +8,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// 1. The 3D Model Component
 function PerfumeBottle({ scrollContainerRef }) {
   const bottleRef = useRef();
   
-  // Loads model from public/models/perfume_bottle.glb
+  // Load model
   const { scene } = useGLTF('/models/perfume_bottle.glb');
 
   useLayoutEffect(() => {
     if (!bottleRef.current || !scrollContainerRef.current) return;
 
-    // Timeline synced directly to the viewport scroll progress
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollContainerRef.current,
@@ -28,7 +26,6 @@ function PerfumeBottle({ scrollContainerRef }) {
       },
     });
 
-    // Step 1: Rotate bottle and shift right
     tl.to(bottleRef.current.rotation, {
       y: Math.PI * 1.5,
       x: 0.1,
@@ -41,7 +38,6 @@ function PerfumeBottle({ scrollContainerRef }) {
       duration: 2,
     }, 0);
 
-    // Step 2: Zoom in on nozzle / Scent Notes section
     tl.to(bottleRef.current.position, {
       x: 0,
       y: -1.2,
@@ -59,31 +55,24 @@ function PerfumeBottle({ scrollContainerRef }) {
     };
   }, [scrollContainerRef]);
 
-  // Subtle floating idle motion
   useFrame((state) => {
     if (bottleRef.current) {
       bottleRef.current.position.y += Math.sin(state.clock.elapsedTime * 1.5) * 0.0008;
     }
   });
 
-  // Returning the primitive WebGL object prevents the empty return syntax error
   return (
-    <primitive 
-      ref={bottleRef} 
-      object={scene} 
-      scale={1.8} 
-      position={[0, -0.2, 0]} 
-    />
+    <group ref={bottleRef} position={[0, -0.2, 0]} scale={1.8}>
+      <primitive object={scene} />
+    </group>
   );
 }
 
-// 2. Main Page Container with Canvas & HTML Scroll Overlay
 export default function FragranceExperience() {
   const containerRef = useRef();
 
   return (
     <div ref={containerRef} className="relative w-full bg-black text-white font-sans">
-      {/* Fixed Canvas sticking to background while scrolling */}
       <div className="sticky top-0 left-0 w-full h-screen pointer-events-none z-0">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
           <ambientLight intensity={0.8} />
@@ -96,9 +85,7 @@ export default function FragranceExperience() {
         </Canvas>
       </div>
 
-      {/* HTML Content Overlay */}
       <div className="relative z-10">
-        {/* Section 1 */}
         <section className="h-screen flex items-center justify-start px-8 md:px-20">
           <div className="max-w-lg">
             <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Luxury Collection</span>
@@ -107,7 +94,6 @@ export default function FragranceExperience() {
           </div>
         </section>
 
-        {/* Section 2 */}
         <section className="h-screen flex items-center justify-end px-8 md:px-20">
           <div className="max-w-md text-right">
             <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Craftsmanship</span>
@@ -116,7 +102,6 @@ export default function FragranceExperience() {
           </div>
         </section>
 
-        {/* Section 3 */}
         <section className="h-screen flex items-center justify-center text-center px-8 md:px-20">
           <div className="max-w-xl">
             <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Notes Pyramid</span>
