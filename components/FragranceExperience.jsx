@@ -8,13 +8,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// 1. The 3D Model Component
 function PerfumeBottle({ scrollContainerRef }) {
   const bottleRef = useRef();
+  
+  // Loads model from public/models/perfume_bottle.glb
   const { scene } = useGLTF('/models/perfume_bottle.glb');
 
   useLayoutEffect(() => {
     if (!bottleRef.current || !scrollContainerRef.current) return;
 
+    // Timeline synced directly to the viewport scroll progress
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollContainerRef.current,
@@ -24,6 +28,7 @@ function PerfumeBottle({ scrollContainerRef }) {
       },
     });
 
+    // Step 1: Rotate bottle and shift right
     tl.to(bottleRef.current.rotation, {
       y: Math.PI * 1.5,
       x: 0.1,
@@ -36,6 +41,7 @@ function PerfumeBottle({ scrollContainerRef }) {
       duration: 2,
     }, 0);
 
+    // Step 2: Zoom in on nozzle / Scent Notes section
     tl.to(bottleRef.current.position, {
       x: 0,
       y: -1.2,
@@ -53,63 +59,76 @@ function PerfumeBottle({ scrollContainerRef }) {
     };
   }, [scrollContainerRef]);
 
+  // Subtle floating idle motion
   useFrame((state) => {
     if (bottleRef.current) {
       bottleRef.current.position.y += Math.sin(state.clock.elapsedTime * 1.5) * 0.0008;
     }
   });
 
+  // Returning the primitive WebGL object prevents the empty return syntax error
   return (
-    
+    <primitive 
+      ref={bottleRef} 
+      object={scene} 
+      scale={1.8} 
+      position={[0, -0.2, 0]} 
+    />
   );
 }
 
+// 2. Main Page Container with Canvas & HTML Scroll Overlay
 export default function FragranceExperience() {
   const containerRef = useRef();
 
   return (
-    
-      
-        
+    <div ref={containerRef} className="relative w-full bg-black text-white font-sans">
+      {/* Fixed Canvas sticking to background while scrolling */}
+      <div className="sticky top-0 left-0 w-full h-screen pointer-events-none z-0">
+        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+          <ambientLight intensity={0.8} />
+          <directionalLight position={[5, 10, 5]} intensity={1.5} color="#ffd700" />
           
+          <PerfumeBottle scrollContainerRef={containerRef} />
           
-          
-          
-          
-          
-          
-        
-      
+          <Environment preset="city" />
+          <ContactShadows position={[0, -1.8, 0]} opacity={0.6} scale={10} blur={2} />
+        </Canvas>
+      </div>
 
-      
-        
-          
-            Luxury Collection
-            ROYAL OUD
-            An unforgettable fragrance crafted in Dubai, blending rare Cambodian oud and Damask rose.
-          
-        
+      {/* HTML Content Overlay */}
+      <div className="relative z-10">
+        {/* Section 1 */}
+        <section className="h-screen flex items-center justify-start px-8 md:px-20">
+          <div className="max-w-lg">
+            <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Luxury Collection</span>
+            <h1 className="text-5xl md:text-7xl font-serif mt-2 tracking-wide">ROYAL OUD</h1>
+            <p className="mt-4 text-gray-400 text-lg">An unforgettable fragrance crafted in Dubai, blending rare Cambodian oud and Damask rose.</p>
+          </div>
+        </section>
 
-        
-          
-            Craftsmanship
-            Hand-Cut Crystal
-            Encased in heavy optical glass accented with real 24k gold foil detailing.
-          
-        
+        {/* Section 2 */}
+        <section className="h-screen flex items-center justify-end px-8 md:px-20">
+          <div className="max-w-md text-right">
+            <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Craftsmanship</span>
+            <h2 className="text-4xl font-serif mt-2">Hand-Cut Crystal</h2>
+            <p className="mt-4 text-gray-400">Encased in heavy optical glass accented with real 24k gold foil detailing.</p>
+          </div>
+        </section>
 
-        
-          
-            Notes Pyramid
-            Sensory Experience
-            Top: Taif Rose, Saffron | Heart: Amberwood, Musk | Base: Pure Cambodian Oud
-            
+        {/* Section 3 */}
+        <section className="h-screen flex items-center justify-center text-center px-8 md:px-20">
+          <div className="max-w-xl">
+            <span className="text-amber-500 uppercase tracking-widest text-sm font-bold">Notes Pyramid</span>
+            <h2 className="text-4xl font-serif mt-2">Sensory Experience</h2>
+            <p className="mt-4 text-gray-400">Top: Taif Rose, Saffron | Heart: Amberwood, Musk | Base: Pure Cambodian Oud</p>
+            <button className="mt-8 px-8 py-3 bg-amber-500 text-black font-semibold rounded-full hover:bg-amber-400 transition-all pointer-events-auto">
               Explore Collection
-            
-          
-        
-      
-    
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
 
