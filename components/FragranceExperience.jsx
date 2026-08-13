@@ -2,7 +2,7 @@
 
 import React, { useRef, useLayoutEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, ContactShadows } from '@react-three/drei';
+import { useGLTF, Environment, ContactShadows, Center } from '@react-three/drei';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -10,8 +10,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 function PerfumeBottle({ scrollContainerRef }) {
   const bottleRef = useRef();
-  
-  // Load model
   const { scene } = useGLTF('/models/perfume_bottle.glb');
 
   useLayoutEffect(() => {
@@ -26,26 +24,28 @@ function PerfumeBottle({ scrollContainerRef }) {
       },
     });
 
+    // Step 1 -> Step 2: Rotate and shift to the right
     tl.to(bottleRef.current.rotation, {
-      y: Math.PI * 1.5,
+      y: Math.PI * 1.2,
       x: 0.1,
       duration: 2,
     })
     .to(bottleRef.current.position, {
-      x: 1.2,
-      y: -0.2,
-      z: 0.5,
+      x: 1.1,
+      y: 0,
+      z: 0,
       duration: 2,
     }, 0);
 
+    // Step 2 -> Step 3: Recenter and zoom in slightly on nozzle
     tl.to(bottleRef.current.position, {
       x: 0,
-      y: -1.2,
-      z: 3.2,
+      y: -0.3,
+      z: 1.5,
       duration: 2,
     })
     .to(bottleRef.current.rotation, {
-      x: 0.3,
+      x: 0.2,
       y: Math.PI * 2,
       duration: 2,
     }, '<');
@@ -57,13 +57,15 @@ function PerfumeBottle({ scrollContainerRef }) {
 
   useFrame((state) => {
     if (bottleRef.current) {
-      bottleRef.current.position.y += Math.sin(state.clock.elapsedTime * 1.5) * 0.0008;
+      bottleRef.current.position.y += Math.sin(state.clock.elapsedTime * 1.5) * 0.0005;
     }
   });
 
   return (
-    <group ref={bottleRef} position={[0, -0.2, 0]} scale={1.8}>
-      <primitive object={scene} />
+    <group ref={bottleRef} position={[0, 0, 0]} scale={0.8}>
+      <Center>
+        <primitive object={scene} />
+      </Center>
     </group>
   );
 }
@@ -75,13 +77,13 @@ export default function FragranceExperience() {
     <div ref={containerRef} className="relative w-full bg-black text-white font-sans">
       <div className="sticky top-0 left-0 w-full h-screen pointer-events-none z-0">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-          <ambientLight intensity={0.8} />
-          <directionalLight position={[5, 10, 5]} intensity={1.5} color="#ffd700" />
+          <ambientLight intensity={0.9} />
+          <directionalLight position={[5, 10, 5]} intensity={1.8} color="#ffd700" />
           
           <PerfumeBottle scrollContainerRef={containerRef} />
           
           <Environment preset="city" />
-          <ContactShadows position={[0, -1.8, 0]} opacity={0.6} scale={10} blur={2} />
+          <ContactShadows position={[0, -1.5, 0]} opacity={0.6} scale={8} blur={2} />
         </Canvas>
       </div>
 
